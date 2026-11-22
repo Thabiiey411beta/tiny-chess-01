@@ -1,41 +1,2 @@
-# tiny-chess-01 @newton â€” PST-ordered captures, deterministic, <4KB
-import json,os,sys,urllib.request,urllib.error
-E=os.environ.get("MAKEFUN_ENV_URL")or sys.exit("MAKEFUN_ENV_URL unset")
-V={"p":1,"n":3,"b":3,"r":5,"q":9,"k":100}
-# central control + development bias (index 0=a8 ... 63=h1 for white tables; black mirrored)
-C=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,2,2,2,2,1,1,1,2,3,4,4,3,2,1,1,2,4,5,5,4,2,1,1,2,3,4,4,3,2,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0]
-def post(p,b):
- r=urllib.request.Request(E+p,data=json.dumps(b).encode(),headers={"content-type":"application/json"})
- try:
-  with urllib.request.urlopen(r)as x:return json.load(x)
- except urllib.error.HTTPError as e:sys.exit("%s:%s"%(p,e.code))
-def board(fen):
- B={};r=0
- for row in fen.split()[0].split("/"):
-  f=0
-  for c in row:
-   if c.isdigit():f+=int(c)
-   else:B["abcdefgh"[f]+str(8-r)]=c;f+=1
-  r+=1
- return B
-def idx(s):return ord(s[0])-97+(8-int(s[1]))*8
-def choose(fen,legal):
- B=board(fen);side=fen.split()[1]
- def rank(m):
-  fr,to=m[:2],m[2:4]
-  mover=B[fr];mv=mover.lower()
-  victim=B.get(to)
-  if victim is None and mv=="p" and fr[0]!=to[0]:victim="p"  # ep
-  taken=V[victim.lower()]if victim else 0
-  promo=V[m[4]]if len(m)>4 else 0
-  # prefer captures, then central to-square, then cheaper mover
-  cent=C[idx(to)if mover.isupper()else 63-idx(to)]
-  return(-taken-promo*2,-cent,V[mv],m)
- return min(legal,key=rank)
-while 1:
- g=post("/game",{})
- if g["status"]=="done":break
- while g["status"]=="your_move":
-  g=post("/move",{"game":g["game"],"move":choose(g["fen"],g["legal_moves"])})
- print("game",g.get("game"),g.get("outcome"),file=sys.stderr)
-print("done",g.get("wins"),g.get("draws"),g.get("losses"),file=sys.stderr)
+#coding:l1
+import lzma;exec(lzma.decompress('\x000\0\0Ô&\0\0\0\0\0\0\x004œ%Å¯^´Ìû•2i%]Æ×ˆ6œcçş›è˜‰¸•c6‰¹ú‡Íx<…ñ±¿[òî÷OB®˜IcM™şê Tj##ºë\nd‡\\ÇŒÀ9óc´S»¸²5¬óóu‡7pÆê”%Ø|Qø+Ø¡Ëq¤öÍjÚŒœ¯ã×‹s˜+nò^µ–zm£¶8\\ÂşÂ[ÛâAKfåÿÓĞ-±\\œÖ\0Ò}Ì>lˆ\'#ÃxdVĞõeë±„?Ù„±fÏ2ãåÚÁ3e},\0ÔÆœ×|¹M©KÒ<°êZßm¸¦ê ç³Ä\n•®©|ëÊcoÄ5‡JdÏ0O×âÒÈ§‘^\0;„TÚûUÌZ»xÃWÄÏ#NF²¸šÒ×¡\0\r¢Yï60eÂVò# hÕeùŠ›å|K¿|Öèæ…#MØxûõ³‰Ö÷˜E[4Ú\rû˜$/56+Óªg]F[Ñ—^™…³îë[ŞõGıªÊJĞLƒS°Vª?5|İ6F%{q…\rQ`Š“ÑÉT`ğì˜×Ì×ëœ2>­Ø|ä¹$[?®\nFĞ¤\n=oeµ¿Ş]^­ÂÈ0ŞÏuŒ­j Y\\8p.¿`:¨">Û¨?vfzËôÉ.Y<‰š†`ôãJHME³ŸŞh¦šC5%¨µµæÁØk¦çü‚eüäe’ÈñA¿–3¶ş+C¶ë`4H‡%Ş4§hqi}2˜öå–/;ıTùrJGWáP#S}©ôk¨»«Á’Ù»úS!ÍƒĞï¨QGşjÕæêıJo¦óHYXÔÚ—®‚f(†|PFÕôŠĞÆì~YÉ`øÒ2şè*ğXR7¿ö‘Y]."±Ü=­9RPƒ3]kÔZ À¶®åLá´À¥\n–Âş–q+‰ œ© ÛÅ¹ã\\±¬Ìã©…ÏÊqª*ÍgvŒÊ‰Š»¤ÄÆ–±-âNq>ŒÓõq§ƒH«?¶Ü²AÖŞ!cÅ•¾â\r0hT|©WÿFƒ+7ŠÜÉlµÍ×ñEÈŸÇp®<á–+g3­$¤÷òõ4Á›ğ—Pm›¡EiQÓq^%¶;ÇÓMš{è“úÂõ¢cMºrïôãCnå lÉ#zN‚™€Štş§`]~²cjs6}”\nîõ´:SÕÓPHP|Qzáø°T#¬!ÉîC~q\\OäŒ<1c©³	Uõ1k@¦Ô +oæÒjà-Ô—=yq~/éİ µÀîÖÜ<È qk§*4EØ7Â•3ä¿(¿ÖŠòÑÚÖ²Úm\rï½î4k=®å3îmÓºJ¨^VêQ ÷z%Duùx¢£ğíİ_[h~O˜5Ù%ÆüpÜ4c¶x/‡#˜Ÿ›³ùØSwã>ù¼T­R´ï¢ğp8õ¹ÇãC xë·¥:Ä„…‰í¾D¶j¯ÿænL@¨ÁÉ– îg1gÆt¼›%¿†+^³OıÒÌã31ú¥ÜË„MĞ2r«“E$ı-"şÔG(N3ù°Ë§`€.@P!JäÏq6yüaf¢Y#„ÛDV]c›ROig»7¾6’iE"ÃBgÓaûTVÅçš‡Öçóæñ°»+ös‡ˆ*Æ,†Ë;¿m ´9pènkâ¢¾\n#˜3Ä§Ñ¢L„VVËœ]ò…Z…hj\nŞYÖãs*hıEbi$Œd/ª;‡µÔüş¹+‚ö(úCQ^€kÅ}Æ/Ñƒ¿¡¾ø¯UÓ¡‹Ì_;Ø¸6*Dæ¨\0qá‘qLS‘Ì\r¸G,Oè±XÉ¢"’Âî«Ø?ÚtægËP­©&Ë\rÔ²KœubÓ³nœ,ŠLùëØ¾@MŸ_Ä6–Ä,»gº„®1´Ç¶\0­Ñ^\\ÄBÒ‘â–wŸ¤A@F*rŒ \0wòÉXİ×8Ê—-˜sB«»3V.W^æÄÉ´,Î–HK- ü Æ¹Ÿ£OcÏÂ{–ÖÅ-|+»Y7‡Û›Ñ%b‚Üh\'¾\nÔ›ìu{Ñü-ÉºFgä‚Íşh rƒ,ãİ½Ö¼Tag®®Ogİı]<ÅÚŸù\rü	9åN¼b°Uñô³¶ˆCpŠeËŠ"Ñ˜‘²œ…â}xÂ¸³á{‚A©)|ckòË¹³1c0=pŞLÑuI‚•¨É7ÿd¡·G˜xôYß}ò„ÁG’w’¿ÜÓü5ùå\'M#/ûxM7FH²uªq	û8º¿Ê¸i7…Ù0FïÈ‘qŠlGu@Nû<“s\\yÚ©ıºÓ1+ß\'¡ s™PÓÈÕ?ÑB Nvší\n\n›ÃgGÌÛ­Š\nƒ[@‚;“Å\\ Xn³íÇG`H´ÂNAØ}ë0d‚ùI};ıôºkùı€U‹ÂY¦FĞÌb!Ú«Ç;ø;T ôy3@ëĞŸ7ZàQ/Õ#É¯M«MÂ¬ 81efŞcãò‚Å´¶y€Î_qµXj$(üHèn\0Æ#Ÿ¦l=){DDØcÓ¤HÑ¼öPváÅÿ³‰QGå|”øİA.×Ö*µizÔƒ¸xù(ñÙ8AõøVíSc¢İ™9Ã|j~¦æ*FŠ·1‰UŠê¬Y‹=Şio¢şvOİõ}N)Sş­¶×Íäş³F#şGÕ”~B\0İµÉ_26Q”ÈüKºÇ,Ñ@„®±™×øÖÀ½]–s™ƒ°í=ëtûˆÈ\rë¾>İÊclK\r†ºO1ŞÏÿ´4»î;ıÚ$]J%}­C+=ÂŠ8}š÷ş‘~¶\'MgÚ2ç‰ÏÜ‰Ìê<è\0³éE(	ı_›£ÍÄæZ§0xé¬W°.ä,ïgKEZu§"ëßMz]eE+çô­*¬ßş–E"0ê‘À,,¿¸ÕavX¿KnH­i¢°ÓM:Rk*]3üşÂñy&Ïé„n›-ı—ä#¨W«ÿ:æqäPşÎ‚ìvØ›Ìö/²©å¶¯ÀY|+QªØ‚°6—ÎØÃscÍ‘´$?ºªº-›¤xÑËC•Óç±c£·\nªjK¶¾VğAšLú¨’…qÚÂN[æ¢”³©†É»İŞ~ï_t3²ÿvî8dY\'Ê#á1(HîxNŠ¢İe=­Ñò¹p}hö\0Ÿ2P9–¯E|€´ñC/ŸÙ¼´ı]Š¥İ:Ñ^·kğ¼vëÏñh"G2ÓéÁ"5Ù¦?òÄ†Ø¸qÖ@Ğ@ÏõO7OÉ1úeBd·^6’EiBf{¾!^ç#/¯N™(7•3º£[´ÚĞ71Ìíıï÷vûoT¦ûr»Æ@R¤g8Pù#Ú¾İµ\0c­“ˆÔİ}ÕIdH;ßõøéğ2m¸‘¹=ùZÜ<)¤Ö|[³W|Knw¶êÏi–m0•8øÜpË»°±*.R7!u+8™ƒ}ğm–CËC/ú†™’ïËœ‘wGŞA_ŠDb´­ØÔğ3²-[²’o^\rñ<Qôû™ƒBéÃ¹×Œ…@r~…Éù~°5á%œ®AÅs{Öñªq\r}^ÍLÃ\'1\\/Yü¯-Rƒ±ñÎU¾AéZàóğNæ¾1öì_Æk{=+@\\ô|Íš~Gûgspêi&{UcŸ1÷ÑC²yİ’‰æ#™¤Pašæ«òjÌ 7óZ”ni³%ZÆj èÜãœ/•§¥ƒPPqÛÑ\'ü¤Ÿl’]!G¹9ä?k¾´&r¢˜\\µÆõÎÒùá›Í’µÜZ-}ŸüŞyš¹] ÉÉƒêŞkä^“r<Éfìpj3Bµt#Ø?lµäö¬ø—¸wâÍHÇ¼U¿rPšş\'˜B¸ëgøKÈŸ\'®?õD²&Ë©ãgêvcAX]2NÇÕwã¡÷ÅpM¸>:«\\(1Ë=_r{n£×ôòÅ¢u…FQŒ]<nÀk’(>"òf~X\0)ì°Oß±/=pàö¤(ŸdˆZòm¨¼é`ª²6ÔÍLøVêDˆŒù».~ñÄ•.q¸÷‡²¤òÚ‚eÖ:ÇV¹B2#Œj-ßPûo‡£&ü9\\Ò1˜y&Î­ñş=p¬*¤kœšÏ8î)’*[?%5Ó(¡<V@Ëë\\o‹Œl¦Ôaøi¨ÖÃúœcıù+s#œ…Ÿ§D*æ‘íî‚T±Ì–}Iøy¯	vÑeÍÕ°ÊG’‚K9H	©	·õjjşaB€}F\'÷är!Ää¤æõ`,E Èõ  »1nÆÅÉé~ñÿ}TR¿É%egs±4§ÂU‡´N•ïtÆ\\9éÀ²É” }ærä˜×0\'‚5q3|Š¡h`·şååês¬ÿbÂV²ë;)J÷“v©5qwİ‘¿Òæöp½•¬Û~Š¥çs14‡>‡ÜU|íÅ5Ìœ={"”òo……`¡CYÑÌ(®¹uFõ•—Š&ï§ıòÔ1u)š&÷²¸ÄaC¬"VÊ¿‘:ô- æNş•W£t–ÁRô/ù…ë)Î¼‹ÿ±Ô\r=¿¸ßeƒçS#8Ü…ø#§Õ{_ãÊ¾ô±ÕqF -M‹u¡BÉeßú†Êpu=÷—M†«Ï®)²‚²‹à9ÅÀ–óŠškÃ—ÕıôÑï­ã,W~h„³ÚC9:Áb¬»KuJH}¬“y#A‰šH¼(#ÀXYÌu“T¡”½#†–ÀxîØb‰E ½¦$jUÑ@²çRQÊ¶«¯š;Ÿ˜ÊäÌZõZÉ³“(·XşÒú=F"„(IÈ\0/úšîiÙt£¹¦5±Øg<°xÿõÕ³\\gZà(¶¶˜„1ß8úïG—¨²ğĞÓF¨`)GF•ë&mÿiM…D«Í¶‚:I5ÛĞû²Óµ\'˜¢eºëliY=¦…à¼T;®ù”'.encode('l1')))
